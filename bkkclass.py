@@ -1,6 +1,7 @@
 class Konto:
+    # Kontoklasse mit angelegten Konten
     angelegteKonten=0
-    
+
     def __init__(self,ktonr,inhaber,autorisiert=["Verfueger"],startkap=0):
         self.__kontonr=ktonr
         self.__inhaber=inhaber
@@ -33,10 +34,10 @@ class Konto:
             if self.__kontostand == 0:
                 self.kontostand = 0
         return self.__kontostand
-    
+
     def lautend(self,ktonr):
         return self.__inhaber
-     
+
     def abfrage(self):
         if self.__kontostand == 0:
             self.__kontostand = 0.0
@@ -44,13 +45,12 @@ class Konto:
 
     def auskap(self,ktonr):
         return(self.__kontostand)
-              
+
     def ausver(self,ktonr):
         return(self.__autorisiert)
-              
+
     def ausinh(self,ktonr):
         return(self.__inhaber)
-    
+
     def ausnum(self,ktonr):
         return(self.__kontonr)
-
