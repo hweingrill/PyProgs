@@ -5,7 +5,6 @@ def create_table(conn, create_table_sql):
     except Error as e:
         print(e)
 
-
 def create_database():
     database = r"BKonten.db"
     sql_create_konten = """ CREATE TABLE IF NOT EXISTS konten (
@@ -26,8 +25,6 @@ def create_database():
                           );"""
 
     conn = create_connection(database)
-    #dropTableStatement="DROP TABLE ktobeweg"
-    #c.exceute(dropTableStatement)
 
     if conn is not None:
         create_table(conn, sql_create_konten)
@@ -35,14 +32,49 @@ def create_database():
     else:
         print("Error! cannot create the database connection.")
 
+class Ktobeweg(object):
+
+    def __init__(self, kontoid:int, bewdat:str, einbet=float, ausbet=float,kz=int,saldo=float):
+        self.ktobewid=kontoid
+        self.ktobewdat=bewdat
+        self.ktobewein=einbet
+        self.ktobewaus=ausbet
+        self.ktobewkz=kz
+        self.ktobewbet=saldo
+
+    def _writebew(self):
+        datenbank = "Bkonten.db"
+        connection = None
+        try:
+            strSQL = f"INSERT INTO ktobeweg SET VALUES," \
+                      f"id={self.ktobewid}"\
+                      f"bewdat={self.ktobewdat}," \
+                      f"einbet={self.ktobewein}" \
+                      f"ausbet={self.ktobewaus}" \
+                      f"kz={self.ktobewaus}"\
+                      f"saldo={self.ktobewbet}"\
+                      f" WHERE id ={self.Kontonummer}"
+            with sqlite3.connect(datenbank) as connection:
+                cursor = connection.cursor()
+                cursor.execute(strSQL)
+                connection.commit()
+        except sqlite3.Error as e:
+            return(e)
 
 class Konto(object):
 
-    def __init__(self, inhaber:str, kontonummer:int,kontostand:float, kontokorrent: float=0.0):
-        self.Inhaber = inhaber
-        self.Kontonummer = kontonummer
-        self.Kontostand = kontostand
-        self.Kontokorrent = kontokorrent
+    def __init__(self, ktonr:int, inhaber:str, autorisiert=["Verfueger"],rahmen:float, startkap:float, kontostand:float, kontodatum:str):
+        self.Kontonummer=ktonr
+        self.Inhaber=inhaber
+        self.Autorisiert=autorisiert
+        self.Kontorahmen = rahmen
+        self.Kontostand=startkap
+        self.Kontodatum = kontodatum
+        Konto.angelegteKonten+=1
+
+        print(ktonr, inhaber, autorisiert, startkap)
+        print(self.kontonr)
+
         # überprüfen, ob Konto schon vorhanden
         # wenn nicht, datenbank anlegen
         create_database()
@@ -50,7 +82,7 @@ class Konto(object):
 
 
     def ueberweisen(self, ziel, betrag):
-        if self.Kontostand - betrag < -self.Kontokorrent:
+        if self.Kontostand - betrag < -self.Kontorahmen:
             # Deckung nicht genuegend
             return False
         else:
@@ -86,7 +118,7 @@ class Konto(object):
                 cursor.execute(strSQL)
                 connection.commit()
         except sqlite3.Error as e:
-            pass
+            return(e)
 
     def _read(self):
         datenbank = "Bkonten.db"
@@ -100,7 +132,8 @@ class Konto(object):
                 cursor.execute(strSQL)
                 # (ktonum, ktouse, ktobere, ktorahm, ktosal, ktodat)
                 data = cursor.fetchone()
-
+                self.Kontonummer, self.Inhaber, self.Autorisiert, self.Kontorahmen,
+                      self.Kontostand, self.Kontodatum = data
 
         except sqlite3.Error as e:
             return(e)
